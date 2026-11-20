@@ -7,7 +7,7 @@ your phone sideways like a wheel and drive.
 **▶ Play it:** [tilt-racer.mosesonwukaenyinnaya.workers.dev](https://tilt-racer.mosesonwukaenyinnaya.workers.dev)
 (open it on a laptop or TV, then scan the code with your phone)
 
-![Beast mode: the boost power-up, with rainbow afterimages and a zoomed-in camera](media/beast-mode.jpg)
+![Racing through a sweeping corner: chase camera, tyre walls, gravel trap, mixed trees and clouds](media/hero.jpg)
 
 <table>
   <tr>
@@ -19,7 +19,7 @@ your phone sideways like a wheel and drive.
     <td><img src="media/power-ups-health.jpg" alt="Two players racing with held power-ups and health shown in the corners" /></td>
   </tr>
   <tr>
-    <td><img src="media/pickup-crates.jpg" alt="Glowing power-up crates hovering across the track ahead of two cars" /></td>
+    <td><img src="media/beast-mode.jpg" alt="Beast mode: the boost power-up, with rainbow afterimages, an aura and speed streaks" /></td>
     <td><img src="media/phone-winner.jpg" alt="The phone after winning: a gold YOU WON, 1st of 2 card" /></td>
   </tr>
 </table>
@@ -37,8 +37,8 @@ your phone sideways like a wheel and drive.
   Shield, Boost, Patch Kit). Cars have health, can be wrecked, and respawn.
 - **Smooth on any device.** Graphics adjust themselves to the machine, from a gaming PC to an
   old laptop or a TV stick.
-- **Everything is generated in code.** The car model, track, scenery and textures are built
-  procedurally (no model or texture downloads), and every sound is synthesized live.
+- **Built in code.** The car model, track and scenery are generated procedurally and every sound
+  is synthesized live; on capable machines a few scanned textures and a real-sky panorama add realism.
 
 ## Engineering highlights
 
@@ -74,6 +74,15 @@ pin a level in the lobby. Scenery (about 2,200 tyres, 1,300 trees) is instanced 
 so each split-screen view culls what it can't see: triangles per frame fell 5× (2.0 M to 0.38 M).
 In testing, Auto settled on Low at 0.76× resolution on a software renderer and held High at 2× on
 a fast GPU with four-way split screen. [Excerpt](excerpts/auto-quality.ts)
+
+**Realistic, crisp rendering that scales down.** On capable machines: per-view post-processing
+(bloom, ACES filmic tone mapping, SMAA, multisampling where pixels are big), image-based lighting
+from a real HDR sky, scanned asphalt, grass that takes its detail from a scan but its colour from a
+mown verge (anti-tiled across 1,700 repeats), procedural clouds that stay sharp at any resolution,
+pine and broadleaf trees, verge grass and a cabin interior seen through tinted glass. Deliberately
+no motion blur or depth of field. Each split-screen view gets its own post-processing chain sized
+to it. On Low none of it loads, and Low actually got faster (132 to 150 fps in a four-way split).
+Screen-space ambient occlusion was tried and dropped: it smeared in split views.
 
 **Voice chat with no extra services.** Phones capture the mic on an AudioWorklet, downsample to
 16 kHz, and run a voice-activity gate with an adaptive noise floor, so only speech is sent. The
@@ -115,7 +124,7 @@ local Node HTTPS server with the same relay lets everything work on home Wi-Fi w
 ## Tech
 
 TypeScript, React 19, three.js via react-three-fiber, Vite, Tailwind CSS 4, the Web Audio API
-(AudioWorklet), and Cloudflare Workers with Durable Objects. About 8,900 lines of TypeScript.
+(AudioWorklet), pmndrs postprocessing, and Cloudflare Workers with Durable Objects. About 8,900 lines of TypeScript.
 
 ## Source code
 
