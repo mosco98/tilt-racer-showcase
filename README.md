@@ -35,6 +35,8 @@ your phone sideways like a wheel and drive.
   and race in the same session. Voice chat runs through the phones.
 - **Combat racing.** Six original power-ups (homing Seekers, EMP Pulse, Spike Traps, Bubble
   Shield, Boost, Patch Kit). Cars have health, can be wrecked, and respawn.
+- **Smooth on any device.** Graphics adjust themselves to the machine, from a gaming PC to an
+  old laptop or a TV stick.
 - **Everything is generated in code.** The car model, track, scenery and textures are built
   procedurally (no model or texture downloads), and every sound is synthesized live.
 
@@ -44,8 +46,11 @@ your phone sideways like a wheel and drive.
 bicycle model: tyre slip angles on a saturating Pacejka-style grip curve, a friction circle per
 axle (so throttle can break the rear loose into a drift), weight transfer, downforce, ABS,
 traction and stability control. It does 0–100 km/h in 6.8 s and pulls about 1.1 g in corners.
-Driving assists were tuned against a simulated "phone player" with reaction delay and shaky
-hands until it made zero mistakes. [Excerpt](excerpts/car-physics.ts)
+Driving assists were tuned against a simulated "phone player" with reaction delay, shaky hands
+and uneven Wi-Fi input. The steering assist follows the line the driver is already on rather
+than the centre line, which stopped the car weaving: 0 trips off track, brake flicker down 4×,
+and the chase camera (on a critically damped spring) shimmers 20 % less.
+[Excerpt](excerpts/car-physics.ts)
 
 **Phone sensors to steering wheel.** The wheel angle comes from gravity measured against the
 phone's long edge, so it reads the same on every platform, every grip and every screen
@@ -59,6 +64,16 @@ measured jitter of the connection (about 40–100 ms), and each car follows a cu
 through its known positions and velocities. On a simulated poor connection this cut on-screen
 position wobble from 16 cm to 3 cm. [Excerpt](excerpts/playout-clock.ts) ·
 [Excerpt](excerpts/smooth-playback.ts)
+
+**Auto graphics quality.** The big screen picks a starting level from the device (GPU,
+cores, memory), then watches real frame times and moves between High, Medium and Low (render
+resolution, shadow quality, scenery shadows, particle density, blast lights, clear-coat paint),
+scaling resolution further at Low if needed. It steps down quickly, steps up only after a long
+smooth stretch, and won't retry a level it just had to leave, so it never ping-pongs. Players can
+pin a level in the lobby. Scenery (about 2,200 tyres, 1,300 trees) is instanced in spatial chunks
+so each split-screen view culls what it can't see: triangles per frame fell 5× (2.0 M to 0.38 M).
+In testing, Auto settled on Low at 0.76× resolution on a software renderer and held High at 2× on
+a fast GPU with four-way split screen. [Excerpt](excerpts/auto-quality.ts)
 
 **Voice chat with no extra services.** Phones capture the mic on an AudioWorklet, downsample to
 16 kHz, and run a voice-activity gate with an adaptive noise floor, so only speech is sent. The
@@ -100,7 +115,7 @@ local Node HTTPS server with the same relay lets everything work on home Wi-Fi w
 ## Tech
 
 TypeScript, React 19, three.js via react-three-fiber, Vite, Tailwind CSS 4, the Web Audio API
-(AudioWorklet), and Cloudflare Workers with Durable Objects. About 8,500 lines of TypeScript.
+(AudioWorklet), and Cloudflare Workers with Durable Objects. About 8,900 lines of TypeScript.
 
 ## Source code
 
