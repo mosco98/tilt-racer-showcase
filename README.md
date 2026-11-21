@@ -22,6 +22,10 @@ your phone sideways like a wheel and drive.
     <td><img src="media/beast-mode.jpg" alt="Beast mode: the boost power-up, with rainbow afterimages, an aura and speed streaks" /></td>
     <td><img src="media/phone-winner.jpg" alt="The phone after winning: a gold YOU WON, 1st of 2 card" /></td>
   </tr>
+  <tr>
+    <td><img src="media/car-choice.jpg" alt="Two players on the grid in split screen, one in a red off-road Kudu R with a roof rack, one in a blue Vela GT with a rear wing" /></td>
+    <td><img src="media/phone-car-picker.jpg" alt="The phone's join screen: a name field and four car pictures to pick from, Vela GT selected" /></td>
+  </tr>
 </table>
 
 ## What it does
@@ -35,10 +39,13 @@ your phone sideways like a wheel and drive.
   and race in the same session. Voice chat runs through the phones.
 - **Combat racing.** Six original power-ups (homing Seekers, EMP Pulse, Spike Traps, Bubble
   Shield, Boost, Patch Kit). Cars have health, can be wrecked, and respawn.
+- **Pick your car.** Four cars (a GT, an off-roader, a scripted Blender coupe and the original),
+  shown on the phone in your own colour.
 - **Smooth on any device.** Graphics adjust themselves to the machine, from a gaming PC to an
   old laptop or a TV stick.
-- **Built in code.** The car model, track and scenery are generated procedurally and every sound
-  is synthesized live; on capable machines a few scanned textures and a real-sky panorama add realism.
+- **Built in code.** The track and scenery are generated procedurally and every sound is
+  synthesized live; on capable machines scanned textures, a real-sky panorama and lighting baked in
+  Blender add realism.
 
 ## Engineering highlights
 
@@ -79,10 +86,26 @@ a fast GPU with four-way split screen. [Excerpt](excerpts/auto-quality.ts)
 (bloom, ACES filmic tone mapping, SMAA, multisampling where pixels are big), image-based lighting
 from a real HDR sky, scanned asphalt, grass that takes its detail from a scan but its colour from a
 mown verge (anti-tiled across 1,700 repeats), procedural clouds that stay sharp at any resolution,
-pine and broadleaf trees, verge grass and a cabin interior seen through tinted glass. Deliberately
-no motion blur or depth of field. Each split-screen view gets its own post-processing chain sized
+pine and broadleaf trees, verge grass and a cabin interior seen through tinted glass. High adds a
+light depth of field (only the far distance softens) and motion blur that only touches the edges of
+the view, so the car and road ahead stay sharp. Each split-screen view gets its own post-processing chain sized
 to it. On Low none of it loads, and Low actually got faster (132 to 150 fps in a four-way split).
 Screen-space ambient occlusion was tried and dropped: it smeared in split views.
+
+**Baked lighting from Blender.** The game exports its own scene (every tree, barrier, tyre wall and
+building) to glTF; a Blender script bakes soft sun shadows and contact occlusion with Cycles onto
+one 4K texture over the circuit, and the ground shaders sample it by world position. Only cars cast
+live shadows on top, which is cheaper than drawing the scenery into a shadow map every frame. A
+layout hash makes the game ignore a bake made for an older track. [Excerpt](excerpts/baked-shadows.ts)
+
+**Cars: from a 3D file to the grid.** Any car GLB with wheels named by corner becomes drivable: the
+loader moves it into game units, merges its parts by material (a few draw calls instead of forty),
+re-centres each wheel on its axle so it spins and steers, and swaps in per-player paint (which soots
+with damage) and brake lights. Models are meshopt-compressed (a 950 KB car becomes 220 KB). One car
+is modelled entirely by a Python script in Blender: cross-sections lofted into a body, booleans for
+windows, arches and intakes. The phone's car picker shows each car in the player's colour from just
+two small images per car (a neutral render and a paint mask, tinted with CSS), rendered by the
+game's own engine so they match the race. [Excerpt](excerpts/glb-car.ts)
 
 **Voice chat with no extra services.** Phones capture the mic on an AudioWorklet, downsample to
 16 kHz, and run a voice-activity gate with an adaptive noise floor, so only speech is sent. The
@@ -124,7 +147,8 @@ local Node HTTPS server with the same relay lets everything work on home Wi-Fi w
 ## Tech
 
 TypeScript, React 19, three.js via react-three-fiber, Vite, Tailwind CSS 4, the Web Audio API
-(AudioWorklet), pmndrs postprocessing, and Cloudflare Workers with Durable Objects. About 8,900 lines of TypeScript.
+(AudioWorklet), pmndrs postprocessing, Blender (Cycles baking, Python modelling), and Cloudflare Workers
+with Durable Objects. About 10,400 lines of TypeScript.
 
 ## Source code
 
